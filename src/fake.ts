@@ -2,50 +2,63 @@
 const faker = require('faker');
 import * as moment from 'moment';
 
+
+function shouldReturnNullByChance(nullChance=0) {
+  return nullChance >= Math.floor(Math.random()*(100-1+1)+1)
+}
+
 export function getRandomInt(min:number, max:number) {
   return faker.random.number({min, max});
 }
 
-export function getRandomItem(array:any[]) {
+export function getRandomItem(array:any[], options?) {
+  const { nullChance } = options
+  if(shouldReturnNullByChance(nullChance)) {
+    return null
+  }
   return array[getRandomInt(0, array.length - 1)];
 }
 
 export const typeFakers = {
   'Int': {
-    defaultOptions: {min: 0, max: 99999},
-    generator: (options) => {
-      options.precision = 1;
-      return () => faker.random.number(options);
-    }
-  },
-  'Float': {
-    defaultOptions: {min: 0, max: 99999, precision: 0.01},
-    generator: (options) => {
-      return () => faker.random.number(options);
-    }
-  },
-  'String': {
-    defaultOptions: {},
-    generator: () => {
-      return () => 'string';
-    }
-  },
-  'Boolean': {
-    defaultOptions: {},
-    generator: () => {
-      return () => faker.random.boolean();
-    }
-  },
-  'ID': {
-    defaultOptions: {},
-    generator: () => {
-      return (parentType) =>
-        new Buffer(
-          parentType.name + ':' + faker.random.number({max: 9999999999}).toString()
-        ).toString('base64');
-    }
-  },
-};
+   defaultOptions: {min: 0, max: 99999},
+   generator: (options) => {
+     options.precision = 1;
+     return () => faker.random.number(options);
+   }
+ },
+ 'Float': {
+   defaultOptions: {min: 0, max: 99999, precision: 0.01},
+   generator: (options) => {
+     return () => faker.random.number(options);
+   }
+ },
+ 'String': {
+   defaultOptions: {},
+   generator: () => {
+     return () => 'string';
+   }
+ },
+ 'Boolean': {
+   defaultOptions: {},
+   generator: () => {
+     return () => faker.random.boolean();
+   }
+ },
+ 'ID': {
+   defaultOptions: {},
+   generator: () => {
+     return (parentType) =>
+       new Buffer(
+         parentType.name + ':' + faker.random.number({max: 9999999999}).toString()
+       ).toString('base64');
+   }
+ },
+}
+
+export function getTypeFaker(type) {
+  return typeFakers[type.name]
+}
 
 const fakeFunctions = {
   // Address section
@@ -210,6 +223,11 @@ Object.keys(fakeFunctions).forEach(key => {
 });
 
 export function fakeValue(type, options?, locale?) {
+  const { nullChance } = options
+  if(shouldReturnNullByChance(nullChance)) {
+    return null
+  }
+
   const fakeGenerator = fakeFunctions[type];
   const argNames = fakeGenerator.args;
   //TODO: add check

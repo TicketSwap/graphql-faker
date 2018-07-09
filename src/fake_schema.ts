@@ -18,6 +18,7 @@ import {
   getRandomInt,
   getRandomItem,
   typeFakers,
+  getTypeFaker,
   fakeValue,
 } from './fake';
 
@@ -34,6 +35,7 @@ type FakeArgs = {
 };
 type ExamplesArgs = {
   values:[any]
+  options: {[key:string]: any}
 };
 type DirectiveArgs = {
   fake?: FakeArgs
@@ -130,20 +132,17 @@ export function fakeSchema(schema: GraphQLSchema) {
   function getCurrentSourceProperty(source, path) {
     return source && source[path!.key];
   }
-
   function getResolver(type:GraphQLOutputType, field) {
-    if (type instanceof GraphQLNonNull)
-      return getResolver(type.ofType, field);
     if (type instanceof GraphQLList)
       return arrayResolver(getResolver(type.ofType, field));
-
+  
     if (isAbstractType(type))
       return abstractTypeResolver(type);
-
+  
     return fieldResolver(type, field);
   }
-
-
+  
+  
   function abstractTypeResolver(type:GraphQLAbstractType) {
     const possibleTypes = schema.getPossibleTypes(type);
     return () => ({__typename: getRandomItem(possibleTypes)});
@@ -157,10 +156,9 @@ function fieldResolver(type:GraphQLOutputType, field) {
   };
   const {fake, examples} = directiveToArgs;
 
-
   if (isLeafType(type)) {
     if (examples)
-      return () => getRandomItem(examples.values)
+      return () => getRandomItem(examples.values, examples.options);
     if (fake) {
       return () => fakeValue(fake.type, fake.options, fake.locale);
     }
@@ -207,9 +205,11 @@ function getLeafResolver(type:GraphQLLeafType) {
     return () => getRandomItem(values);
   }
 
-  const typeFaker = typeFakers[type.name];
-  if (typeFaker)
+  const typeFaker = getTypeFaker(type);
+  if (typeFaker) {
     return typeFaker.generator(typeFaker.defaultOptions);
+  }
+
   else
     return () => `<${type.name}>`;
 }

@@ -176,6 +176,7 @@ input fake__options {
   imageCategory: fake__imageCategory
   # Only for type `imageUrl`
   randomizeImageUrl: Boolean
+  nullChance: Int
   # Only for type `email`
   emailProvider: String
   # Only for type `password`
