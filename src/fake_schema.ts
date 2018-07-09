@@ -37,9 +37,13 @@ type ExamplesArgs = {
   values:[any]
   options: {[key:string]: any}
 };
+type ListArgs = {
+  options: any
+}
 type DirectiveArgs = {
   fake?: FakeArgs
   examples?: ExamplesArgs
+  list?: ListArgs
 };
 
 const stdTypeNames = Object.keys(typeFakers);
@@ -133,9 +137,17 @@ export function fakeSchema(schema: GraphQLSchema) {
     return source && source[path!.key];
   }
   function getResolver(type:GraphQLOutputType, field) {
-    if (type instanceof GraphQLList)
-      return arrayResolver(getResolver(type.ofType, field));
-  
+    if (type instanceof GraphQLList) {
+      const directiveToArgs = {
+        ...getFakeDirectives(type),
+        ...getFakeDirectives(field),
+      };
+      const { list } = directiveToArgs;
+      const options = list && list.options
+
+      return arrayResolver(getResolver(type.ofType, field), options);
+    }     
+
     if (isAbstractType(type))
       return abstractTypeResolver(type);
   
@@ -175,9 +187,10 @@ function fieldResolver(type:GraphQLOutputType, field) {
   }
 }
 
-function arrayResolver(itemResolver) {
+function arrayResolver(itemResolver, options={minLength: 2, maxLength: 4}) {
+  const { minLength, maxLength } = options
   return (...args) => {
-    let length = getRandomInt(2, 4);
+    let length = getRandomInt(minLength, maxLength);
     const result = [];
 
     while (length-- !== 0)
@@ -196,6 +209,8 @@ function getFakeDirectives(object: any) {
     result.fake = directives.getDirectiveArgs('fake') as FakeArgs;
   if (directives.isApplied('examples'))
     result.examples = directives.getDirectiveArgs('examples') as ExamplesArgs;
+  if (directives.isApplied('list'))
+    result.list = directives.getDirectiveArgs('list') as ListArgs;
   return result;
 }
 

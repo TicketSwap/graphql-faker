@@ -160,6 +160,9 @@ input fake__color {
 }
 
 input fake__options {
+  # Only for @list directive
+  minLength: Int
+  maxLength: Int
   # Only for type `streetAddress`
   useFullAddress: Boolean
   # Only for type `money`
@@ -191,6 +194,8 @@ input fake__options {
 }
 
 directive @fake(type:fake__Types!, options: fake__options = {}, locale:fake__Locale) on FIELD_DEFINITION | SCALAR
+
+directive @list(options: fake__options = {}) on FIELD_DEFINITION | SCALAR
 
 
 scalar examples__JSON
