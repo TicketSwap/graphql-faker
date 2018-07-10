@@ -13,7 +13,7 @@
     "copy:graphql": "cp src/*.graphql dist/",
     "copy:editor": "mkdir -p dist/editor && cp src/editor/*.{html,js,css,svg} dist/editor",
     "build:all": "npm run build:editor && npm run build:typescript && npm run copy:graphql && npm run copy:editor",
-    "install": "npm run build:all"
+    "postinstall": "postinstall-build lib --script build:all"
   },
   "repository": {
     "type": "git",
@@ -51,6 +51,7 @@
     "moment": "2.22.2",
     "node-fetch": "2.1.2",
     "opn": "5.3.0",
+    "postinstall-build": "^5.0.1",
     "yargs": "11.0.0"
   }
 }
