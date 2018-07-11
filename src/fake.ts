@@ -12,7 +12,7 @@ export function getRandomInt(min:number, max:number) {
 }
 
 export function getRandomItem(array:any[], options?) {
-  const { nullChance } = options
+  const nullChance = options && options.nullChance
   if(shouldReturnNullByChance(nullChance)) {
     return null
   }
@@ -223,7 +223,7 @@ Object.keys(fakeFunctions).forEach(key => {
 });
 
 export function fakeValue(type, options?, locale?) {
-  const { nullChance } = options
+  const nullChance = options && options.nullChance
   if(shouldReturnNullByChance(nullChance)) {
     return null
   }
